@@ -45,6 +45,7 @@ minimumReleaseAgeExclude:
   - nuxt-studio
   # Comark
   - comark
+  - "@comark/*"
 
 allowBuilds:
   "@parcel/watcher": false
