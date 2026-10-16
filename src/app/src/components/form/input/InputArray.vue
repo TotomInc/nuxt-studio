@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormItem } from '../../../types'
 import { formItemInputLabel } from '../../../utils/form'
+import { keepComboboxFocus } from '../../../utils/combobox'
 import type { PropType } from 'vue'
 import { computed, nextTick, ref } from 'vue'
 
@@ -21,6 +22,24 @@ const itemsType = computed(() => props.formItem?.type)
 const itemsLabel = computed(() =>
   props.formItem?.title ? formItemInputLabel(props.formItem) : '',
 )
+
+const hasOptions = computed(() => itemsType.value === 'string' && !!props.formItem?.options?.length)
+
+const isBlank = (value: unknown) => value === '' || value === null || value === undefined
+
+// Stored values outside the enum stay listed so they can be seen and removed.
+const selectOptions = computed(() => [...new Set([
+  ...(props.formItem?.options || []),
+  ...(model.value || []),
+])].filter(value => !isBlank(value)).map(value => ({ label: String(value), value })))
+
+// Blank entries can't be shown as options, so drop them as soon as the selection changes.
+const selectedValues = computed({
+  get: () => model.value || [],
+  set: (values: unknown[]) => {
+    model.value = values.filter(value => !isBlank(value))
+  },
+})
 
 const activeIndex = ref<number | null>(null)
 const stringEditingValue = ref('')
@@ -170,6 +189,23 @@ function moveItem(index: number, offset: number) {
       </div>
     </template>
 
+    <!-- Array of Enum Strings -->
+    <div
+      v-else-if="hasOptions"
+      @mousedown="keepComboboxFocus"
+    >
+      <USelectMenu
+        v-model="selectedValues"
+        :items="selectOptions"
+        value-key="value"
+        :placeholder="$t('studio.form.text.selectPlaceholder')"
+        :portal="false"
+        multiple
+        size="xs"
+        class="w-full"
+      />
+    </div>
+
     <!-- Array of Strings -->
     <template v-else-if="itemsType === 'string'">
       <div class="flex flex-wrap items-center gap-1.5">
@@ -233,7 +269,7 @@ function moveItem(index: number, offset: number) {
 
     <!-- Add button -->
     <div
-      v-if="itemsType"
+      v-if="itemsType && !hasOptions"
       class="flex"
       :class="{ 'justify-end': items.length > 0 }"
     >
