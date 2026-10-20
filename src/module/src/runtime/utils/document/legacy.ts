@@ -617,8 +617,11 @@ function isWrittenWithYamlProps([tag, { $: _meta, ...attrs }]: ElementNode, stat
 }
 
 function withKebabCaseAttributes([tag, attrs, ...children]: ElementNode): ElementNode {
-  const kebabCaseAttrs = Object.fromEntries(Object.entries(attrs).map(([key, value]) => [isInternalAttribute(key) ? key : kebabCase(key), value]))
-  return [tag, kebabCaseAttrs, ...children]
+  return [tag, kebabCaseAttributeNames(attrs), ...children]
+}
+
+function kebabCaseAttributeNames(attrs: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(attrs).map(([key, value]) => [isInternalAttribute(key) ? key : kebabCase(key), value]))
 }
 
 /**
@@ -724,7 +727,10 @@ function normalizeLegacyNode(node: MarkdownNode, nested = false): MarkdownNode {
   let [, attrs, ...children] = node as ElementNode
   if (tag === 'pre' && nested) ({ attrs, children } = stripCodeIndentation(attrs, children))
 
-  return [tag, unbindJsonAttrs(attrs || {}), ...unwrapLeadingDefaultSlot(children).map(child => normalizeLegacyNode(child, true))] as ElementNode
+  // @nuxtjs/mdc kebab-cases inline attribute names, comark keeps them as written.
+  const normalizedAttrs = kebabCaseAttributeNames(unbindJsonAttrs(attrs || {}))
+
+  return [tag, normalizedAttrs, ...unwrapLeadingDefaultSlot(children).map(child => normalizeLegacyNode(child, true))] as ElementNode
 }
 
 /**

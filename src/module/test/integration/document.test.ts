@@ -285,6 +285,21 @@ This action cannot be undone.
       expect(second).toBe(first)
     })
 
+    // Written by hand, or saved by earlier Studio versions.
+    describe('file with camelCase inline props', () => {
+      const content = '::my-card{imageUrl="/card.png"}\nHello\n::\n'
+
+      it('matches its own deployed body', async () => {
+        expect(await isDocumentMatchingContent(content, await storedDocumentOf(content))).toBe(true)
+      })
+
+      it('still detects a changed prop value', async () => {
+        const changed = content.replace('/card.png', '/other.png')
+
+        expect(await isDocumentMatchingContent(changed, await storedDocumentOf(content))).toBe(false)
+      })
+    })
+
     it('keeps the names of props written in a YAML block', async () => {
       const content = `::u-button
 ---
