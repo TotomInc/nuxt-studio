@@ -481,7 +481,7 @@ export default defineNuxtModule<ModuleOptions>({
       filename: 'types/studio-macros.d.ts',
       getContents: () => [
         'declare global {',
-        '  function defineStudioMeta(meta: import(\'nuxt-studio/app\').StudioComponentMeta): void',
+        '  function defineStudioMeta<Props = unknown>(meta: import(\'nuxt-studio/app\').StudioComponentMeta<NoInfer<Props>>): void',
         '}',
         'export {}',
         '',
