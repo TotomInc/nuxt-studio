@@ -6,10 +6,6 @@ export interface StudioPropMeta<Value = unknown> extends EditorOptions {
   fields?: StudioFieldsMeta<Value>
 }
 
-/**
- * Annotations keyed by prop or field name. When `Value` is known, names are checked against it,
- * and `fields` follows the type of each prop: an object's keys, or the keys of an array's items.
- */
 export type StudioFieldsMeta<Value = unknown> = unknown extends Value
   ? Record<string, StudioPropMeta>
   : Value extends readonly (infer Item)[]
